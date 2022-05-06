@@ -132,11 +132,14 @@ return
          const enc = new TextEncoder();
          const note = enc.encode("Hello Matias!");
          amount = 1000000;
-         // let closeout = receiver; //closeRemainderTo
-         //  let sender = oracle_sk.addr.toString();
-        //  sender = "LR4PLJS7KIV7V56N7VENMRBGZOJXMBGPS33TK2QRHBE7VXPRSZWZEUD6C4";
-        sender = "JPKHPHVRRVTLGXP7DOK3UR7YXMFN3KUABJFLGTLPI4J76HNHZHYP5ORLEI"
-        receiver = "TQULBUDS5FU3FOTYONILPWKEOUV4GGHXQ2X2RJMCJI2NZ6P6R64KB3RRCE"
+ 
+         // Account1
+         sender = "LR4PLJS7KIV7V56N7VENMRBGZOJXMBGPS33TK2QRHBE7VXPRSZWZEUD6C4";
+       
+         // Logicsig Account
+         // sender = "JPKHPHVRRVTLGXP7DOK3UR7YXMFN3KUABJFLGTLPI4J76HNHZHYP5ORLEI"
+      
+         receiver = "TQULBUDS5FU3FOTYONILPWKEOUV4GGHXQ2X2RJMCJI2NZ6P6R64KB3RRCE"
       
          let txn1 = algosdk.makePaymentTxnWithSuggestedParams(sender, receiver, amount, undefined, note, params);
         //  let txId = txn1.txID().toString();
@@ -149,6 +152,7 @@ return
          args = null;
          lsig = new algosdk.LogicSigAccount(program_array, args);
          console.log('logicsic_account: '+lsig.address())
+         lsig.sign(account1.sk) // Logicsig delegates to account1
      
          const stxn = algosdk.signLogicSigTransactionObject(txn1, lsig);
 
