@@ -68,8 +68,31 @@ const createAccount =  function (){
     }
 };
 
+  // compile stateless delegate contract
+  async function compileProgram(client, programSource) {
+    let encoder = new TextEncoder();
+    let programBytes = encoder.encode(programSource);
+    let compileResponse = await client.compile(programBytes).do();
+    return compileResponse;
+  }
+
 
 async function firstTransaction() {
+
+let logicsig = `#pragma version 5
+txn CloseRemainderTo
+global ZeroAddress
+==
+txn RekeyTo
+global ZeroAddress
+==
+&&
+txn Fee
+int 1000
+<=
+&&
+return
+`;
 
     try {
         // let myAccount = createAccount();
@@ -111,18 +134,30 @@ async function firstTransaction() {
          amount = 1000000;
          // let closeout = receiver; //closeRemainderTo
          //  let sender = oracle_sk.addr.toString();
-         sender = "LR4PLJS7KIV7V56N7VENMRBGZOJXMBGPS33TK2QRHBE7VXPRSZWZEUD6C4";
-         receiver = "TQULBUDS5FU3FOTYONILPWKEOUV4GGHXQ2X2RJMCJI2NZ6P6R64KB3RRCE"
+        //  sender = "LR4PLJS7KIV7V56N7VENMRBGZOJXMBGPS33TK2QRHBE7VXPRSZWZEUD6C4";
+        sender = "JPKHPHVRRVTLGXP7DOK3UR7YXMFN3KUABJFLGTLPI4J76HNHZHYP5ORLEI"
+        receiver = "TQULBUDS5FU3FOTYONILPWKEOUV4GGHXQ2X2RJMCJI2NZ6P6R64KB3RRCE"
       
          let txn1 = algosdk.makePaymentTxnWithSuggestedParams(sender, receiver, amount, undefined, note, params);
-         let txId = txn1.txID().toString();
-         console.log("Signed transaction with txID: %s", txId);
+        //  let txId = txn1.txID().toString();
+        //  console.log("Signed transaction with txID: %s", txId);
 
-         let signedTxn = txn1.signTxn(account1.sk);
+        // build the logicsig
+         compilation = await compileProgram(algodClient, logicsig);
+         logicsigProgram = Buffer.from(compilation.result, "base64");
+         program_array = new Uint8Array (logicsigProgram);
+         args = null;
+         lsig = new algosdk.LogicSigAccount(program_array, args);
+         console.log('logicsic_account: '+lsig.address())
+     
+         const stxn = algosdk.signLogicSigTransactionObject(txn1, lsig);
+
+        //  let signedTxn = txn1.signTxn(account1.sk);
 
 
          // Submit the transaction
-         await algodClient.sendRawTransaction(signedTxn).do();
+        //  await algodClient.sendRawTransaction(signedTxn).do();
+        const { txId } = await algodClient.sendRawTransaction(stxn.blob).do();
  
          // Wait for confirmation
          let confirmedTxn = await waitForConfirmation(algodClient, txId, 4);
